@@ -9,7 +9,7 @@ no if ($] >= 5.018), 'warnings' => 'experimental';
 my ($source, $modulo, $n_totali) = @ARGV;
  
 if (not defined $source) {
-    print "./$0 src_exam.tex [mod] [tot]";
+    print "$0 src_exam.tex [mod] [tot]";
     print "\nsrc_exam.tex: original exam text written in TeX";
     print "\nmod: shuffle to be carried out (it is usually the modulus of the number of total exam tests)";
     print "\ntot: total exam tests";
@@ -106,6 +106,8 @@ system( sprintf "pdftk %s cat output ../%s",$input_files, $file_out_esame);
 
 chdir '..';
 
-print "Cleanup...";
+print "\nCleanup...";
 system("rm -f spool/*");
 print " done\n";
+
+print "You find full pdf in full_exam.pdf\n";

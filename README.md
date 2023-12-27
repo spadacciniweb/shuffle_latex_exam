@@ -1,9 +1,9 @@
 # shuffle_latex_exam
 Perl script to shuffle test written in LaTeX
-by documentclass exam.
+by `exam` documentclass.
 
-To exec:
-    ./shuffle.pl
+Test exec:
+    ./shuffle.pl test_source_sample.tex
 
 ## LaTeX Info
 The text to be shuffle is between questions environment like:
