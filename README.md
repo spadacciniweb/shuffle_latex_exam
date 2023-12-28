@@ -29,11 +29,12 @@ use POSIX qw(ceil);
 
 ### system software requirements
 ```console
-$ cp
-$ rm
-$ pdflatex
-$ pdftk
+$ cp ...
+$ rm ...
+$ pdflatex ...
+$ pdftk ...
 ```
 
-cp and rm are system commands,
-pdflatex to build single pdf files from latex sources, pdftk to join pdf files in single pdf.
+- ``cp`` and ``rm`` are system commands;
+- ``pdflatex`` to build single pdf files from latex sources;
+- ``pdftk`` to join pdf files in single pdf and to add global footer.
