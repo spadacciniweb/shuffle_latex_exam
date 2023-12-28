@@ -36,4 +36,4 @@ $ pdftk
 ```
 
 cp and rm are system commands,
-pdflatex to build pdf, pdftk to join pdf in single pdf.
+pdflatex to build single pdf files from latex sources, pdftk to join pdf files in single pdf.

@@ -6,13 +6,14 @@ use List::Util qw/shuffle/;
 use POSIX qw(ceil);
 no if ($] >= 5.018), 'warnings' => 'experimental';
 
-my ($source, $modulo, $n_totali) = @ARGV;
+my ($source, $n_totali, $modulo, $footer) = @ARGV;
  
 if (not defined $source) {
-    print "$0 src_exam.tex [mod] [tot]";
-    print "\nsrc_exam.tex: original exam text written in TeX";
-    print "\nmod: shuffle to be carried out (it is usually the modulus of the number of total exam tests)";
-    print "\ntot: total exam tests";
+    print "$0 src_exam.tex [tot] [mod] [global_footer]";
+    print "\nsrc_exam.tex: original exam text written in TeX (sample in test_source_sample.tex)";
+    print "\ntot: total exam tests (default 15)";
+    print "\nmod: shuffle to be carried out (default 3, it is set as the modulus of the number of total exam tests)";
+    print "\nglobal_footer: 0 or 1 (default 1)";
     print "\n";
     exit 1;
 } elsif (not -r $source ) {
@@ -20,28 +21,37 @@ if (not defined $source) {
     exit 2;
 }
 
+if (not defined $n_totali
+    or
+    $n_totali !~ /^\d+$/
+    or
+    $n_totali < 1
+) {
+    printf "tot is not valid so it is equal to 15\n";
+    $n_totali = 15;
+}
+
 if (not defined $modulo
     or
-    $modulo !~ /^\d$/
+    $modulo !~ /^\d+$/
     or
-    $modulo < 2
+    $modulo < 1
+    or
+    $modulo > $n_totali
 ) {
-    printf "mod is not valid so it is equal to 3";
+    printf "mod is not valid so it is equal to 3\n";
     $modulo = 3;
 }
 
-if (not defined $n_totali
+if (not defined $footer
     or
-    $n_totali !~ /^\d$/
-    or
-    $n_totali < $modulo
+    $footer !~ /^[01]$/
 ) {
-    printf "\ntot is not valid so it is equal to modulo";
-    $n_totali = $modulo;
+    printf "footer is not valid so it is equal to 1\n";
+    $footer = 1;
 }
 print "\n";
 
- 
 my $file_out_esame = 'full_exam.pdf';
 my $spool = 'spool/';
 
@@ -102,9 +112,34 @@ foreach my $i (0..($n_totali-1)) {
 
 my $input_files = join ' ', map { sprintf 'out_%d.pdf', $_ }
                             0..($n_totali-1);
-system( sprintf "pdftk %s cat output ../%s",$input_files, $file_out_esame);
+system( sprintf "pdftk %s cat output %s", $input_files, $file_out_esame);
 
-chdir '..';
+if ($footer) {
+    print "Writing the footer...\n";
+    my $cmd = sprintf "pdftk %s dump_data | grep NumberOfPages", $file_out_esame;
+    my $total_pages = `$cmd`;
+    $total_pages =~ s/.+ (\d+)\n$/$1/;
+    my $page_numbers_template = '../template/page_number.tex';
+    my $out_page_number = 'page_number.tex';
+    open(my $rh, "<", $page_numbers_template) or die "Can't open < $page_numbers_template: $!";
+    open(my $wh, ">", $out_page_number) or die "Can't open > $out_page_number: $!";
+    while (my $line = <$rh>) {
+        $line =~ s/%TOTAL_PAGE_NUMBER/$total_pages/
+            if $line =~ /%TOTAL_PAGE_NUMBER/;
+        print $wh $line;
+    }
+    close $rh;
+    close $wh;
+    foreach (0..1) {
+        system(sprintf "pdflatex %s", $out_page_number);
+    }
+    $out_page_number =~ s/.tex$/.pdf/;
+    system( sprintf "pdftk %s multistamp %s output ../%s", $file_out_esame, $out_page_number, $file_out_esame );
+} else {
+    system( sprintf "cp %s ../", $file_out_esame);
+}
+
+chdir '../';
 
 print "\nCleanup...";
 system("rm -f spool/*");
